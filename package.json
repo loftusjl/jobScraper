@@ -5,6 +5,7 @@
     "casperjs": "^1.1.4",
     "chalk": "^2.4.1",
     "cheerio": "^1.0.0-rc.2",
+    "eslint": "^5.6.0",
     "express": "^4.16.3",
     "express-handlebars": "^3.0.0",
     "global": "^4.3.2",
