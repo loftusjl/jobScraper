@@ -21,7 +21,7 @@
     "camelcase": "error",
     "indent": [
     "error",
-    "tab"
+    "2"
     ],
     "linebreak-style": 0,
     "quotes": [
