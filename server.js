@@ -2,12 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
-
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
-var axios = require('axios');
-var cheerio = require('cheerio');
+const scrapeSite = require('./src/scrapeSite');
 
 // Require all models
 var db = require('./models');
@@ -36,35 +31,8 @@ mongoose.connect('mongodb://localhost/job_scraper_db');
 // A GET route for scraping the echoJS website
 app.get('/scrape', function (req, res) {
 	// First, we grab the body of the html with request
-	axios.get('https://news.ycombinator.com/jobs').then(function (response) {
-		// Then, we load that into cheerio and save it to $ for a shorthand selector
-		var $ = cheerio.load(response.data);
+	scrapeSite('https://news.ycombinator.com/jobs', res);
 
-		// grab every td and do the following:
-		$('td').each((index, item) => {
-			// console.log('#####', $(this))
-			// Save an empty result object
-			$item = $(item)
-			console.log('item  ',item)
-			console.log('this  ',$(this))
-			var result = {};
-			result.link = $item
-				.children('a')
-				.attr('href')
-			// Add the text and href of every link, and save them as properties of the result object
-			result.title = $item
-				.children('a')
-				.text();
-
-			// Create a new Job using the `result` object built from scraping
-			if (result.title && result.link && result.link.includes('http')) {
-				createJob(result)
-			}
-		});
-
-		// If we were able to successfully scrape and save an Job, send a message to the client
-		res.send('Scrape Complete');
-	});
 });
 
 // Route for getting all Jobs from the db
@@ -129,21 +97,3 @@ app.post('/Jobs/:id', function (req, res) {
 app.listen(PORT, function () {
 	console.log('App running on port ' + PORT + '!');
 });
-
-
-function createJob(result) {
-
-	db.Job.create(result)
-
-		.then(function (dbJob) {
-
-			// View the added result in the console
-			console.log('dbjob',dbJob);
-			return dbJob;
-		})
-		.catch(function (err) {
-			// If an error occurred, send it to the client
-			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',err);
-			throw new Error(err);
-		})
-}
