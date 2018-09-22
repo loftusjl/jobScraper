@@ -26,55 +26,70 @@ app.use(express.static('public'));
 // Connect to the Mongo DB
 mongoose.connect('mongodb://localhost/job_scraper_db');
 
-function scrapeSite(url, res) {
-	axios.get(url).then(function (response) {
-		// Then, we load that into cheerio and save it to $ for a shorthand selector
-		var $ = cheerio.load(response.data);
-
-		// grab every td and do the following:
-		$('td').each((index, item) => {
-			// Save an empty result object
-			$item = $(item)
-			var result = {};
-			result.link = $item
-				.children('a')
-				.attr('href')
-			// Add the text and href of every link, and save them as properties of the result object
-			result.title = $item
-				.children('a')
-				.text();
-
-			// Create a new Job using the `result` object built from scraping
-			if (result.title && result.link && result.link.includes('http')) {
-				createJob(result)
-			}
-			if (result.title === 'More') {
-				scrapeNext(result.link);
-			};
+function scrapeSite(url, res, counter) {
+	console.log(`********************************
+	COUNTER # ${counter}
+	********************************`)
+	if (counter < 3) {
+		axios.get(url).then(function (response) {
+			// Then, we load that into cheerio and save it to $ for a shorthand selector
+			var $ = cheerio.load(response.data);
+	
+			// grab every td and do the following:
+			$('td').each((index, item) => {
+				// Save an empty result object
+				$item = $(item)
+				var result = {};
+				result.link = $item
+					.children('a')
+					.attr('href')
+				// Add the text and href of every link, and save them as properties of the result object
+				result.title = $item
+					.children('a')
+					.text();
+	
+				// Create a new Job using the `result` object built from scraping
+				if (result.title && result.link && result.link.includes('http')) {
+					createJob(result)
+				}
+				if (result.title === 'More') {
+					url = result.link;
+				};
+			});
+			console.log(`********************************
+			new URL is ${url}
+			********************************`)
+			scrapeSite("https://news.ycombinator.com/"+url,res, counter+1);
+			// If we were able to successfully scrape and save an Job, send a message to the client
+			res.send('Scrape Complete');
 		});
 
-		// If we were able to successfully scrape and save an Job, send a message to the client
-		res.send('Scrape Complete');
-	});
+	}
 }
 
 function createJob(result) {
-
-	db.Job.create(result)
+	const query = {
+		title: result.title,
+		link: result.link
+	}
+	record = Object.assign({date:Date.now()}, query)
+	// instead of using create, I use findOneAndUpdate
+	// but add the upsert option. If no record is found,
+	// the query will create a new record with the passed
+	// in parameters. This avoids duplicate data being scraped.
+	db.Job.findOneAndUpdate(query, record, {upsert:true})
 
 		.then(function (dbJob) {
 
 			// View the added result in the console
-			console.log('dbjob',dbJob);
+			console.log('dbjob', dbJob);
 			return dbJob;
 		})
 		.catch(function (err) {
 			// If an error occurred, send it to the client
-			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',err);
+			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', err);
 			throw new Error(err);
 		})
 };
-function scrapeNext(url) {
-  scrapeSite(`https://news.ycombinator.com/${url}`)
-}
+
 module.exports = scrapeSite;
