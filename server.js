@@ -43,8 +43,10 @@ app.get('/scrape', function (req, res) {
 app.get('/Jobs', function (req, res) {
 	// Grab every document in the Jobs collection
 	db.Job.find({})
+		.populate('note')
 		.then(function (dbJob) {
 			// If we were able to successfully find Jobs, send them back to the client
+			console.log(dbJob)
 			res.json(dbJob);
 		})
 		.catch(function (err) {

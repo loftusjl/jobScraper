@@ -19,9 +19,9 @@ $.getJSON("/Jobs", function(data) {
           <div class="card-reveal">
           <span class="card-title grey-text text-darken-4">Job Listing<i class="material-icons right">close</i></span>
           <p>${data[i].title}</p>
-          <input id='titleinput' name='title' >
-          <textarea id='bodyinput' name='body'></textarea>
-          <a class="btn waves-effect waves-light" data-id=${data._id} id='savenote'>Save Note</a>
+          <input id='titleinput' name='title' value="${(data[i].note ? data[i].note.title : '')}">
+          <textarea id='bodyinput' name='body'>${(data[i].note ? data[i].note.body : '')}</textarea>
+          <a class="btn waves-effect waves-light" data-id=${data[i]._id} id='savenote'>Save Note</a>
           <div class="card-action">
             <a class="btn waves-effect waves-light" href="${data[i].link}">See the posting</a>
           </div>
@@ -32,40 +32,6 @@ $.getJSON("/Jobs", function(data) {
   }
 });
 
-
-// Whenever someone clicks a p tag
-$(document).on("click", "p", function() {
-  // Empty the notes from the note section
-  $("#notes").empty();
-  // Save the id from the p tag
-  var thisId = $(this).attr("data-id");
-
-  // Now make an ajax call for the Job
-  $.ajax({
-    method: "GET",
-    url: "/Jobs/" + thisId
-  })
-    // With that done, add the note information to the page
-    .then(function(data) {
-      console.log(data);
-      // The title of the Job
-      $("#notes").append("<h2>" + data.title + "</h2>");
-      // An input to enter a new title
-      $("#notes").append("<input id='titleinput' name='title' >");
-      // A textarea to add a new note body
-      $("#notes").append("<textarea id='bodyinput' name='body'></textarea>");
-      // A button to submit a new note, with the id of the Job saved to it
-      $("#notes").append("<button data-id='" + data._id + "' id='savenote'>Save Note</button>");
-
-      // If there's a note in the Job
-      if (data.note) {
-        // Place the title of the note in the title input
-        $("#titleinput").val(data.note.title);
-        // Place the body of the note in the body textarea
-        $("#bodyinput").val(data.note.body);
-      }
-    });
-});
 
 // When you click the savenote button
 $(document).on("click", "#savenote", function() {
@@ -87,11 +53,5 @@ $(document).on("click", "#savenote", function() {
     .then(function(data) {
       // Log the response
       console.log(data);
-      // Empty the notes section
-      $("#notes").empty();
     });
-
-  // Also, remove the values entered in the input and textarea for note entry
-  $("#titleinput").val("");
-  $("#bodyinput").val("");
 });
