@@ -1,3 +1,4 @@
+
 // Grab the Jobs as a json
 $.getJSON("/Jobs", function(data) {
   // For each one
@@ -19,6 +20,7 @@ $.getJSON("/Jobs", function(data) {
           <div class="card-reveal">
           <span class="card-title grey-text text-darken-4">Job Listing<i class="material-icons right">close</i></span>
           <p>${data[i].title}</p>
+          <p>${data[i].date}</p>
           <input id='titleinput' name='title' value="${(data[i].note ? data[i].note.title : '')}">
           <textarea id='bodyinput' name='body'>${(data[i].note ? data[i].note.body : '')}</textarea>
           <a class="btn waves-effect waves-light" data-id=${data[i]._id} id='savenote'>Save Note</a>

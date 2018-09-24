@@ -32,6 +32,20 @@ mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI);
 // Routes
 
+const rootLoad = async (req, res) => {
+	// scrape updated listings
+	await scrapeSite('https://news.ycombinator.com/jobs', res, 0)
+
+	// GET route for root will scrape the most recent listings and then send the html
+	await app.get('/', function (req, res) {
+		res.sendFile('index.html')
+	})
+
+}
+
+// scrape ycombinator and then send index.html
+rootLoad();
+
 // A GET route for scraping the echoJS website
 app.get('/scrape', function (req, res) {
 	// First, we grab the body of the html with request
@@ -43,6 +57,7 @@ app.get('/scrape', function (req, res) {
 app.get('/Jobs', function (req, res) {
 	// Grab every document in the Jobs collection
 	db.Job.find({})
+		.sort({date:'desc'})
 		.populate('note')
 		.then(function (dbJob) {
 			// If we were able to successfully find Jobs, send them back to the client
