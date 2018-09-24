@@ -34,5 +34,8 @@
     "url": "https://github.com/loftusjl/jobScraper/issues"
   },
   "homepage": "https://github.com/loftusjl/jobScraper#readme",
+  "scripts": {
+    "start": "node server.js"
+  },
   "description": ""
 }
