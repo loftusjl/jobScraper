@@ -24,7 +24,12 @@ app.use(bodyParser.urlencoded({
 app.use(express.static('public'));
 
 // Connect to the Mongo DB
-mongoose.connect('mongodb://localhost/job_scraper_db');
+MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/job_scraper_db";
+
+// Set mongoose to leverage built in JavaScript ES6 Promises
+// Connect to the Mongo DB
+mongoose.Promise = Promise;
+mongoose.connect(MONGODB_URI);
 
 function scrapeSite(url, res, counter) {
 	console.log(`********************************
